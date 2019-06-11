@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+      xmlns:layout="http://ultrag.net.nz/thymeleaf/layout"
+>
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body>
+    <div class="container" style="text-align: center; margiin-top:50px;">
+        <div class="row col-md-6 col-md-offset-3">
+            <div class="panel panel-default">
+                <div class="panel-heading" th:text="${title}">注册页面</div>
+                <div class="panel-body">
+                    <form id="registForm" th:action="@{/register}" th:object="${user}" method="post">
+                        <div class="input-group">
+                            <span class="input-group-addon">username</span>
+                            <input id="username" type = text th:field="*{username}" class="form-control" placeholder="用户名">
+                        </div>
+                        <div>
+                            <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" style="color:red;"></span>
+                        </div>
+                        <br>
+
+                        <div class="input-group">
+                            <span class="input-group-addon">username</span>
+                            <input id="password" type = text th:field="*{password}" class="form-control" placeholder="密码">
+                        </div>
+                        <div>
+                            <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" style="color:red;"></span>
+                        </div>
+                        <br>
+
+                        <div class="input-group">
+                            <span class="input-group-addon">username</span>
+                            <input id="repassword" type = text th:field="*{repassword}" class="form-control" placeholder="确认密码">
+                        </div>
+                        <br>
+                        <button type="submit" class="btn btn-primary register-bin">注册</button>
+                        <button type="reset" class="btn btn-warning">重置</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/js/jquery-3.1.1.js}"></script>
+    <script th:src="@{/js/additional-methods.min.js}"></script>
+    <script th:src="@{/js/jquery.validate.min.js}"></script>
+    <script th:src="@{/js/messages_zh.min.js}"></script>
+    <script type="text/javascript">
+        $("#registForm").validate({
+           rules:{
+               username: "required",
+               password: "required",
+               repassword:{
+                   required: true,
+                   equalTo: "#password",
+               }
+           }
+        });
+    </script>
+</body>
+</html>
