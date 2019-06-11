@@ -9,6 +9,7 @@ import com.stock.xMarket.matching.pool.AllocOnlyPool;
 import com.stock.xMarket.matching.pool.RecyclablePool;
 import com.stock.xMarket.matching.pool.TradeOrderPool;
 import com.stock.xMarket.matching.redis.RealTime1Redis;
+import com.stock.xMarket.matching.utils.RabbitmqUtils;
 import com.stock.xMarket.model.Gear;
 import com.stock.xMarket.model.RealTime1;
 
@@ -17,6 +18,7 @@ import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.connection.RabbitUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -29,6 +31,8 @@ import javax.annotation.PostConstruct;
 
 public class Matcher {
 
+    @Autowired
+    private RabbitmqUtils utils;
     @Autowired
     private StockRepository stockRepository;
     @Autowired
@@ -91,23 +95,25 @@ public class Matcher {
 
     @RabbitListener(queues = RabbitConfig.QUEUE_A)
     public void process(String  content) {
-    	System.out.println(" [x] Received '" + content + "'");
-        //logger.info("接收处理队列A当中的消息： " + message);
+        logger.info("接收处理连续竞价委托队列当中的消息： ");
         JSONObject order = JSON.parseObject(content);
         Morder morder = new Morder(order);
-        System.out.println(morder.toString());
+        logger.info("订单内容： " + morder.toString());
         continuousBidding(morder);
-        
     }
 
+    //初始化
     @PostConstruct
     public void init(){
+        //utils.stopMessageListener(RabbitConfig.QUEUE_A);
+        logger.info("停止所有队列监听");
         List<TradedInst> temp = stockRepository.findAll();
         Iterator<TradedInst> iterator = temp.iterator();
         TradedInst stock = null;
         while(iterator.hasNext()) {
             stock = iterator.next();
             stockList.addStock(new TradedInst(stock.getStockId(), stock.getStockname(), stock.getPastClosePrice()));
+            logger.info("初始化加入股票： " + stock.getStockId() + " " + stock.getStockname());
         }
     }
 
@@ -123,7 +129,6 @@ public class Matcher {
     public List<Gear> getBuyFive(TradedInst stock) {
         List<Gear> list = new LinkedList<Gear>();
         int level = 0;
-        Gear gear;
         Iterator<Map.Entry<Double, PriceLeader>> itsB =  stock.getPrcList(0).entrySet().iterator();
         while(itsB.hasNext()) {
             PriceLeader priceLeader = itsB.next().getValue();
@@ -134,13 +139,14 @@ public class Matcher {
             if(level >= 5)
                 break;
         }
+        for(int i = level; i < 5; i++)
+            list.add(new Gear(-1.0,-1));
         return list;
     }
 
     //卖五
     public List<Gear> getSellFive(TradedInst stock) {
         List<Gear> list = new LinkedList<Gear>();
-        Gear gear;
         int level = 0;
         Iterator<Map.Entry<Double, PriceLeader>> itsS =  stock.getPrcList(1).entrySet().iterator();
         while(itsS.hasNext()) {
@@ -152,6 +158,8 @@ public class Matcher {
             if(level >= 5)
                 break;
         }
+        for(int i = level; i < 5; i++)
+            list.add(new Gear(-1.0,-1));
         return list;
     }
     //申请订单对象
@@ -247,6 +255,8 @@ public class Matcher {
             priceLeader.getOrderlist().add(order);
         }
         orderList.put(order.getOrder_id(),order);
+        RealTime1 real = getRealTime1(stock);
+        stockRedis.put(stock.getStockId()+"", real, -1);
         return true;
     }
 
@@ -750,36 +760,40 @@ public class Matcher {
         if(order.getTrade_straregy() != 0 && qty == 0)
             backOrder(order);
         else {
-            //限价 //对手方最优价格 //本方最优价格
-            if (order.getTrade_straregy() == 0 || order.getTrade_straregy() == 3 || order.getTrade_straregy() == 4) {
-                doBdding(order, qty, matchTree.entrySet().iterator());
-                if(qty < order.getOrder_amount())
-                    insertOrder(order);
-            }
-            //最优五档即时成交 剩余撤销 //即时成交剩余撤单
-            else if (order.getTrade_straregy() == 1 || order.getTrade_straregy() == 5
-                    || order.getTrade_straregy() == 6) {
-                System.out.println(qty);
-                doBdding(order, qty, matchTree.entrySet().iterator());
-                if(qty < order.getOrder_amount())
-                    backOrder(order);
-            }
-            //最优五档即时成交 剩余转限价
-            else if (order.getTrade_straregy() == 2) {
-                doBdding(order, qty, matchTree.entrySet().iterator());
-                if(qty < order.getOrder_amount()) {
-                    order.setOrder_price(stock.getNew_price());
-                    insertOrder(order);
-                }
-            }
-            //全额成交或撤销委托
-            else if (order.getTrade_straregy() == 7) {
-                if (qty < order.getOrder_amount())
-                    backOrder(order);
-                else
+            if (qty == 0) {
+                insertOrder(order);
+            } else {
+                //限价 //对手方最优价格 //本方最优价格
+                if (order.getTrade_straregy() == 0 || order.getTrade_straregy() == 3 || order.getTrade_straregy() == 4) {
                     doBdding(order, qty, matchTree.entrySet().iterator());
-            } else
-                return false;
+                    if (qty < order.getOrder_amount())
+                        insertOrder(order);
+                }
+                //最优五档即时成交 剩余撤销 //即时成交剩余撤单
+                else if (order.getTrade_straregy() == 1 || order.getTrade_straregy() == 5
+                        || order.getTrade_straregy() == 6) {
+                    System.out.println(qty);
+                    doBdding(order, qty, matchTree.entrySet().iterator());
+                    if (qty < order.getOrder_amount())
+                        backOrder(order);
+                }
+                //最优五档即时成交 剩余转限价
+                else if (order.getTrade_straregy() == 2) {
+                    doBdding(order, qty, matchTree.entrySet().iterator());
+                    if (qty < order.getOrder_amount()) {
+                        order.setOrder_price(stock.getNew_price());
+                        insertOrder(order);
+                    }
+                }
+                //全额成交或撤销委托
+                else if (order.getTrade_straregy() == 7) {
+                    if (qty < order.getOrder_amount())
+                        backOrder(order);
+                    else
+                        doBdding(order, qty, matchTree.entrySet().iterator());
+                } else
+                    return false;
+            }
         }
         return true;
     }

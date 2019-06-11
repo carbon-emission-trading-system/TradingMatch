@@ -1,5 +1,6 @@
 package com.stock.xMarket.matching.utils;
 
+import com.stock.xMarket.matching.config.RabbitConfig;
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistry;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,20 @@ public class RabbitmqUtils {
      * 所有的队列监听容器MAP
      */
     private final Map<String, SimpleMessageListenerContainer> allQueue2ContainerMap = new ConcurrentHashMap<>();
+
+    /**
+     * 停止所有队列监听
+     */
+    public boolean stopAllMessage() {
+        stopMessageListener(RabbitConfig.QUEUE_A);
+        stopMessageListener(RabbitConfig.QUEUE_B);
+        stopMessageListener(RabbitConfig.QUEUE_C);
+        stopMessageListener(RabbitConfig.QUEUE_D);
+        return true;
+    }
+
+
+
 
     /**
      * 重置消息队列并发消费者数量
