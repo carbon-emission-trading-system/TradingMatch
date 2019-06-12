@@ -9,7 +9,6 @@ import com.stock.xMarket.matching.pool.AllocOnlyPool;
 import com.stock.xMarket.matching.pool.RecyclablePool;
 import com.stock.xMarket.matching.pool.TradeOrderPool;
 import com.stock.xMarket.matching.redis.RealTime1Redis;
-import com.stock.xMarket.matching.utils.RabbitmqUtils;
 import com.stock.xMarket.model.Gear;
 import com.stock.xMarket.model.RealTime1;
 
@@ -18,7 +17,6 @@ import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.connection.RabbitUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -32,11 +30,9 @@ import javax.annotation.PostConstruct;
 public class Matcher {
 
     @Autowired
-    private RabbitmqUtils utils;
-    @Autowired
     private StockRepository stockRepository;
     @Autowired
-    private  RealTime1Redis stockRedis;
+    private RealTime1Redis stockRedis;
     @Autowired
     private RabbitTemplate rabbitTemplate;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -52,12 +48,12 @@ public class Matcher {
     private LinkedList<Double> delPrcLdrList;
     private LinkedList<Double> delPrcLdrList2;
     //订单列表 订单id 订单
-    private TreeMap<Integer,Morder> orderList;
+    private TreeMap<Integer, Morder> orderList;
     //构造函数
 
-    public Matcher() throws InstantiationException,IllegalAccessException {
+    public Matcher() throws InstantiationException, IllegalAccessException {
         this.stockList = new TradedInstList();
-        this.prcLdrPool =  new RecyclablePool(1000);
+        this.prcLdrPool = new RecyclablePool(1000);
         this.orderPool = new AllocOnlyPool(10000);
         this.tradeOrderPool = new TradeOrderPool(10000);
         this.delPrcLdrList = new LinkedList<Double>();
@@ -66,17 +62,15 @@ public class Matcher {
     }
 
     public Matcher(int prcLdrCnt, int orderCnt, int tradeOrderCnt)
-            throws InstantiationException,IllegalAccessException {
+            throws InstantiationException, IllegalAccessException {
         this.stockList = new TradedInstList();
-        this.prcLdrPool =  new RecyclablePool(prcLdrCnt);
+        this.prcLdrPool = new RecyclablePool(prcLdrCnt);
         this.orderPool = new AllocOnlyPool(orderCnt);
         this.tradeOrderPool = new TradeOrderPool(tradeOrderCnt);
         this.delPrcLdrList = new LinkedList<Double>();
         this.delPrcLdrList2 = new LinkedList<Double>();
         this.orderList = new TreeMap<Integer, Morder>();
     }
-
-
 
 
     @RabbitListener(queues = RabbitConfig.QUEUE_B)
@@ -87,6 +81,7 @@ public class Matcher {
 
     @RabbitListener(queues = RabbitConfig.QUEUE_D)
     public void allo(String content) {
+        logger.info("接收处理集合竞价委托队列当中的消息： " + content);
         JSONObject order = JSON.parseObject(content);
         Morder morder = new Morder(order);
         insertOrder(morder);
@@ -94,39 +89,40 @@ public class Matcher {
 
 
     @RabbitListener(queues = RabbitConfig.QUEUE_A)
-    public void process(String  content) {
-        logger.info("接收处理连续竞价委托队列当中的消息： ");
+    public void process(String content) {
+        logger.info("接收处理连续竞价委托队列当中的消息： " + content);
         JSONObject order = JSON.parseObject(content);
         Morder morder = new Morder(order);
-        logger.info("订单内容： " + morder.toString());
         continuousBidding(morder);
+
     }
 
-    //初始化
     @PostConstruct
-    public void init(){
+    public void init() {
+
         //utils.stopMessageListener(RabbitConfig.QUEUE_A);
         logger.info("停止所有队列监听");
 
         List<TradedInst> temp = stockRepository.findAll();
         Iterator<TradedInst> iterator = temp.iterator();
         TradedInst stock = null;
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             stock = iterator.next();
-            stockList.addStock(new TradedInst(stock.getStockId(), stock.getStockname(), stock.getPastClosePrice()));
+            TradedInst stock1 = new TradedInst(stock.getStockId(), stock.getStockname(), stock.getPastClosePrice());
+            stockList.addStock(stock1);
+
             logger.info("初始化加入股票： " + stock.getStockId() + " " + stock.getStockname());
 
-            RealTime1 real = getRealTime1(stock);
-            stockRedis.put(stock.getStockId()+"", real, -1);
+            RealTime1 real = getRealTime1(stock1);
+            stockRedis.put(stock.getStockId() + "", real, -1);
         }
-
     }
 
-    public String toString1(){
+    public String toString1() {
         return stockList.getStock(600446).toString1();
     }
 
-    public String toString2(){
+    public String toString2() {
         return stockList.getStock(600446).toString2();
     }
 
@@ -134,18 +130,19 @@ public class Matcher {
     public List<Gear> getBuyFive(TradedInst stock) {
         List<Gear> list = new LinkedList<Gear>();
         int level = 0;
-        Iterator<Map.Entry<Double, PriceLeader>> itsB =  stock.getPrcList(0).entrySet().iterator();
-        while(itsB.hasNext()) {
+        Iterator<Map.Entry<Double, PriceLeader>> itsB = stock.getPrcList(0).entrySet().iterator();
+        while (itsB.hasNext()) {
             PriceLeader priceLeader = itsB.next().getValue();
-            if(priceLeader.getAccumQty() <= 0)
+            if (priceLeader.getAccumQty() <= 0)
                 continue;
             list.add(new Gear(priceLeader.getPrice(), priceLeader.getAccumQty()));
-            level ++;
-            if(level >= 5)
+            level++;
+            if (level >= 5)
                 break;
         }
-        for(int i = level; i < 5; i++)
-            list.add(new Gear(-1.0,-1));
+        for (int i = level; i < 5; i++)
+            list.add(new Gear(-1.0, -1));
+
         return list;
     }
 
@@ -153,36 +150,38 @@ public class Matcher {
     public List<Gear> getSellFive(TradedInst stock) {
         List<Gear> list = new LinkedList<Gear>();
         int level = 0;
-        Iterator<Map.Entry<Double, PriceLeader>> itsS =  stock.getPrcList(1).entrySet().iterator();
-        while(itsS.hasNext()) {
+        Iterator<Map.Entry<Double, PriceLeader>> itsS = stock.getPrcList(1).entrySet().iterator();
+        while (itsS.hasNext()) {
             PriceLeader priceLeader = itsS.next().getValue();
-            if(priceLeader.getAccumQty() <= 0)
+            if (priceLeader.getAccumQty() <= 0)
                 continue;
             list.add(new Gear(priceLeader.getPrice(), priceLeader.getAccumQty()));
-            level ++;
-            if(level >= 5)
+            level++;
+            if (level >= 5)
                 break;
         }
-        for(int i = level; i < 5; i++)
-            list.add(new Gear(-1.0,-1));
+        for (int i = level; i < 5; i++)
+            list.add(new Gear(-1.0, -1));
+
         return list;
     }
+
     //申请订单对象
     public final Morder allocOrder() {
         return orderPool.getObj();
     }
 
     //申请成交单对象
-    public final MtradeOrder allocTradeOrder(){
+    public final MtradeOrder allocTradeOrder() {
         return tradeOrderPool.getObj();
     }
 
     //获取本方价格档位
-    public PriceLeader getPrcLdr(Morder order){
+    public PriceLeader getPrcLdr(Morder order) {
         TradedInst stock = stockList.getStock(order.getStock_id());
         TreeMap<Double, PriceLeader> prcList = stock.getPrcList(order.getType());
         PriceLeader priceLeader = null;
-        if(order.getType() == 0)
+        if (order.getType() == 0)
             priceLeader = prcList.get(-order.getOrder_price());
         else
             priceLeader = prcList.get(order.getOrder_price());
@@ -190,45 +189,45 @@ public class Matcher {
     }
 
     //撤单
-    public final boolean delOrder(int orderId){
-        if(orderId <= 0)
+    public final boolean delOrder(int orderId) {
+        if (orderId <= 0)
             return false;
         Morder order = orderList.get(orderId);
-        if(order == null)
+        if (order == null)
             return false;
         order.setDelflg(true);
 
         TradedInst stock = stockList.getStock(order.getStock_id());
         PriceLeader priceLeader = getPrcLdr(order);
         priceLeader.setAccumQty(priceLeader.getAccumQty() - order.getRemQty());
-        if(priceLeader.getAccumQty() <= 0) {
-            if(priceLeader.getIsbuy() == 0)
+        if (priceLeader.getAccumQty() <= 0) {
+            if (priceLeader.getIsbuy() == 0)
                 delPrcLdrList.add(priceLeader.getPrior());
             else
                 delPrcLdrList2.add(priceLeader.getPrior());
         }
 
         MtradeOrder tradeOrder = null;
-        if(order.getType() == 0)
-            tradeOrder = getTradeOrder(order.getStock_id(), orderId, -1, true,false,
-                    -1, order.getRemQty(),true, order.getOwner(), -1);
+        if (order.getType() == 0)
+            tradeOrder = getTradeOrder(order.getStock_id(), orderId, -1, true, false,
+                    -1, order.getRemQty(), true, order.getOwner(), -1);
         else
-            tradeOrder = getTradeOrder(order.getStock_id(), -1, orderId, false,true,
-                    -1, order.getRemQty(),true, -1, order.getOwner());
+            tradeOrder = getTradeOrder(order.getStock_id(), -1, orderId, false, true,
+                    -1, order.getRemQty(), true, -1, order.getOwner());
         record(stock, tradeOrder);
         removePrcLdr(stock);
         return true;
     }
 
     public boolean record(TradedInst stock, MtradeOrder order) {
-        if(stock == null || order == null)
+        if (stock == null || order == null)
             return false;
 
         System.out.println(order.toJson());
         rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE_B, RabbitConfig.ROUTINGKEY_C, order.toJson());
         update(stock, order);
         RealTime1 real = getRealTime1(stock);
-        stockRedis.put(stock.getStockId()+"", real, -1);
+        stockRedis.put(stock.getStockId() + "", real, -1);
         return true;
     }
 
@@ -238,30 +237,28 @@ public class Matcher {
             return false;
         TradedInst stock = stockList.getStock(order.getStock_id());
         PriceLeader priceLeader = getPrcLdr(order);
-        if (priceLeader == null){
+        if (priceLeader == null) {
             priceLeader = prcLdrPool.getObj();
-            if(priceLeader == null)
+            if (priceLeader == null)
                 return false;
             priceLeader.setAccumQty(order.getRemQty());
             priceLeader.setIsbuy(order.getType());
             priceLeader.getOrderlist().add(order);
             priceLeader.setPrice(order.getOrder_price());
-            if(order.getType() == 0) {
+            if (order.getType() == 0) {
                 priceLeader.setPrior(-order.getOrder_price());
                 stock.addtoPrcList(true, priceLeader);
-            }
-            else {
+            } else {
                 priceLeader.setPrior(order.getOrder_price());
                 stock.addtoPrcList(false, priceLeader);
             }
-        }
-        else{
+        } else {
             priceLeader.setAccumQty(priceLeader.getAccumQty() + order.getRemQty());
             priceLeader.getOrderlist().add(order);
         }
-        orderList.put(order.getOrder_id(),order);
+        orderList.put(order.getOrder_id(), order);
         RealTime1 real = getRealTime1(stock);
-        stockRedis.put(stock.getStockId()+"", real, -1);
+        stockRedis.put(stock.getStockId() + "", real, -1);
         return true;
     }
 
@@ -273,16 +270,16 @@ public class Matcher {
         String id = "";
 
 
-        if(buyOrderId == -1)
-            id= "-" + id + sellOrderId;
-        else if(sellOrderId == -1)
-            id= "-" + id + buyOrderId;
+        if (buyOrderId == -1)
+            id = "-" + id + sellOrderId;
+        else if (sellOrderId == -1)
+            id = "-" + id + buyOrderId;
         else {
             TradedInst stock = stockList.getStock(stockID);
             stock.setNew_price(tradePrice);
-            id= id + buyOrderId ;
+            id = id + buyOrderId;
         }
-        mtradeOrder.setTradeOrderId(Integer.parseInt(id)+(int)System.currentTimeMillis());
+        mtradeOrder.setTradeOrderId(Integer.parseInt(id) - 1000000000 + (int) System.currentTimeMillis());
         mtradeOrder.setStockID(stockID);
         mtradeOrder.setBuyOrderId(buyOrderId);
         mtradeOrder.setSellOrderId(sellOrderId);
@@ -297,15 +294,15 @@ public class Matcher {
         return mtradeOrder;
     }
 
-    public int max(int a, int b){
-        if(a > b)
+    public int max(int a, int b) {
+        if (a > b)
             return a;
         else
             return b;
     }
 
-    public int min(int a, int b){
-        if(a < b)
+    public int min(int a, int b) {
+        if (a < b)
             return a;
         else
             return b;
@@ -323,28 +320,28 @@ public class Matcher {
         Double buyKey = null;
         Double sellKey = null;
 
-        if(stock == null || result == null)
+        if (stock == null || result == null)
             return null;
         buyTree = stock.getPrcList(0);
-        if(buyTree == null)
+        if (buyTree == null)
             return null;
         sellTree = stock.getPrcList(1);
-        if(sellTree == null)
+        if (sellTree == null)
             return null;
 
         buyEntry = buyTree.firstEntry();
-        if(buyEntry == null)
+        if (buyEntry == null)
             return null;
         buyKey = buyEntry.getKey();
         buyLdr = buyEntry.getValue();
 
         sellEntry = sellTree.firstEntry();
-        if(sellEntry == null)
+        if (sellEntry == null)
             return null;
         sellKey = sellEntry.getKey();
         sellLdr = sellEntry.getValue();
 
-        if(sellLdr.getPrice() > buyLdr.getPrice())
+        if (sellLdr.getPrice() > buyLdr.getPrice())
             return null;
 
         // 从买卖队列的头开始遍历
@@ -354,27 +351,26 @@ public class Matcher {
         int buyQtyRemain = buyLdr.getAccumQty();
         int sellQtyRemain = sellLdr.getAccumQty();
 
-        while(buyLdr.getPrice() >= sellLdr.getPrice()){
-            int matchvolum = min(buyQtyRemain,sellQtyRemain);
+        while (buyLdr.getPrice() >= sellLdr.getPrice()) {
+            int matchvolum = min(buyQtyRemain, sellQtyRemain);
             totalMatchedQty += matchvolum;
             buyQtyRemain -= matchvolum;
             sellQtyRemain -= matchvolum;
 
             lastBuyPrice = buyLdr.getPrice();
             lastSellPrice = sellLdr.getPrice();
-            if(buyQtyRemain == 0) {
+            if (buyQtyRemain == 0) {
                 buyEntry = stock.getPrcList(0).higherEntry(buyKey);
-                if(buyEntry == null)
+                if (buyEntry == null)
                     break;
                 else {
                     buyKey = buyEntry.getKey();
                     buyLdr = buyEntry.getValue();
                     buyQtyRemain = buyLdr.getAccumQty();
                 }
-            }
-            else {
+            } else {
                 sellEntry = stock.getPrcList(1).higherEntry(sellKey);
-                if(sellEntry == null)
+                if (sellEntry == null)
                     break;
                 else {
                     sellKey = sellEntry.getKey();
@@ -384,18 +380,16 @@ public class Matcher {
             }
         }
         String sid = String.valueOf(stock.getStockId());
-        if(sid.startsWith("600")) {
-            result.setPrice((lastBuyPrice + lastSellPrice)/2);
+        if (sid.startsWith("600")) {
+            result.setPrice((lastBuyPrice + lastSellPrice) / 2);
             result.setVolume(totalMatchedQty);
             return result;
-        }
-        else {
+        } else {
             result.setVolume(totalMatchedQty);
-            if(lastBuyPrice == lastSellPrice) {
-                result.setPrice((lastBuyPrice + lastSellPrice)/2);
+            if (lastBuyPrice == lastSellPrice) {
+                result.setPrice((lastBuyPrice + lastSellPrice) / 2);
                 return result;
-            }
-            else {
+            } else {
                 int a = 0, b = 0, c = 0, d = 0;
                 Map.Entry<Double, PriceLeader> temp = buyTree.firstEntry();
                 while (temp.getValue().getPrice() > lastBuyPrice) {
@@ -427,14 +421,14 @@ public class Matcher {
                 }
                 int p1 = Math.abs(a - b);
                 int p2 = Math.abs(c - d);
-                if(p1 < p2)
+                if (p1 < p2)
                     result.setPrice(lastBuyPrice);
-                else if(p1 > p2)
+                else if (p1 > p2)
                     result.setPrice(lastSellPrice);
                 else {
                     Calendar calendar = Calendar.getInstance();
                     int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                    if (hour < 12 )
+                    if (hour < 12)
                         result.setPrice(stock.getPastClosePrice());
                     else
                         result.setPrice(stock.getNew_price());
@@ -444,12 +438,21 @@ public class Matcher {
         }
     }
 
+
+    @Scheduled(cron = "5 15 17 ? * MON-FRI")
+    public void syso() {
+        System.out.println("定时任务");
+    }
+
+
     //集合竞价撮合
     @Scheduled(cron = "0 25 9 ? * MON-FRI")
     @Scheduled(cron = "0 57 14 ? * MON-FRI")
+    @Scheduled(cron = "5 16 17 ? * MON-FRI")
     public boolean doCallAuction() {
+        System.out.println("定时任务");
         Iterator<Map.Entry<Integer, TradedInst>> its = stockList.getList().entrySet().iterator();
-        while(its.hasNext()) {
+        while (its.hasNext()) {
             TradedInst stock = its.next().getValue();
             CallAuctionResult result = calcCallAuction(stock);
             if (stock == null || result == null) {
@@ -496,7 +499,7 @@ public class Matcher {
                             continue;
                         }
                     } else {
-                        if(buyOrd.isDelflg())
+                        if (buyOrd.isDelflg())
                             continue;
                         break;
                     }
@@ -514,7 +517,7 @@ public class Matcher {
                             continue;
                         }
                     } else {
-                        if(sellOrd.isDelflg())
+                        if (sellOrd.isDelflg())
                             continue;
                         break;
                     }
@@ -564,10 +567,11 @@ public class Matcher {
         }
         return true;
     }
+
     //获取即时信息
     public RealTime1 getRealTime1(TradedInst stock) {
-        return new RealTime1(stock.getStockId(), stock.getNew_price(), stock.getOpenPrice(),stock.getMaxPrice(),
-                stock.getMinPrice(), stock.getTradeVolumn(), stock.getPastClosePrice(), stock.getTradeAmount(),getBuyFive(stock), getSellFive(stock));
+        return new RealTime1(stock.getStockId(), stock.getNew_price(), stock.getOpenPrice(), stock.getMaxPrice(),
+                stock.getMinPrice(), stock.getTradeVolumn(), stock.getPastClosePrice(), stock.getTradeAmount(), getBuyFive(stock), getSellFive(stock));
     }
 
     //计算成交量
@@ -576,84 +580,80 @@ public class Matcher {
         PriceLeader priceLeader = null;
         int level = 0;
         TradedInst stock = stockList.getStock(order.getStock_id());
-        if(order.getTrade_straregy() == 1 || order.getTrade_straregy() == 2 || order.getTrade_straregy() == 5
+        if (order.getTrade_straregy() == 1 || order.getTrade_straregy() == 2 || order.getTrade_straregy() == 5
                 || order.getTrade_straregy() == 6 || order.getTrade_straregy() == 7)
             order.setOrder_price(Integer.MAX_VALUE);
-        else if(order.getTrade_straregy() == 3) {
-            if(stock.getBestPeerPrcLdr(order.getType()) == null)
+        else if (order.getTrade_straregy() == 3) {
+            if (stock.getBestPeerPrcLdr(order.getType()) == null)
                 return 0;
             PriceLeader bestLeader = stock.getBestPeerPrcLdr(order.getType()).getValue();
             order.setOrder_price(bestLeader.getPrice());
-        }
-        else if(order.getTrade_straregy() == 4) {
-            if(order.getType() == 0) {
-                if(stock.getBestPeerPrcLdr(1) == null)
+        } else if (order.getTrade_straregy() == 4) {
+            if (order.getType() == 0) {
+                if (stock.getBestPeerPrcLdr(1) == null)
                     return 0;
-            }
-            else {
-                if(stock.getBestPeerPrcLdr(0) == null)
+            } else {
+                if (stock.getBestPeerPrcLdr(0) == null)
                     return 0;
             }
             PriceLeader bestLeader = null;
-            if(order.getType() == 0)
+            if (order.getType() == 0)
                 bestLeader = stock.getBestPeerPrcLdr(1).getValue();
             else
                 bestLeader = stock.getBestPeerPrcLdr(0).getValue();
 
             order.setOrder_price(bestLeader.getPrice());
-        }
-        else
+        } else
             order.setOrder_price(order.getOrder_price());
-        while(its.hasNext() && qty < order.getRemQty()) {
+        while (its.hasNext() && qty < order.getRemQty()) {
             priceLeader = its.next().getValue();
-            if(order.getType() == 0) {
+            if (order.getType() == 0) {
                 if (order.getOrder_price() >= priceLeader.getPrice())
                     qty += min(order.getRemQty() - qty, priceLeader.getAccumQty());
                 else
                     break;
-            }
-            else {
+            } else {
                 if (order.getOrder_price() <= priceLeader.getPrice())
                     qty += min(order.getRemQty(), priceLeader.getAccumQty());
                 else
                     break;
             }
-            level ++;
-            if(order.getTrade_straregy() == 1 || order.getTrade_straregy() == 2 || order.getTrade_straregy() == 5)
-                if(level == 5)
+            level++;
+            if (order.getTrade_straregy() == 1 || order.getTrade_straregy() == 2 || order.getTrade_straregy() == 5)
+                if (level == 5)
                     break;
         }
         return qty;
     }
+
     //匹配成交
     public boolean doBdding(Morder order, int qty, Iterator<Map.Entry<Double, PriceLeader>> its) {
         delPrcLdrList.clear();
         delPrcLdrList2.clear();
-        if(order == null || qty <= 0 || its == null)
+        if (order == null || qty <= 0 || its == null)
             return false;
         PriceLeader priceLeader = null;
         Morder oldOrder = null;
         boolean nextOrder = true;
         MtradeOrder tradeOrder = null;
-        if(!its.hasNext())
+        if (!its.hasNext())
             return false;
         else
             priceLeader = its.next().getValue();
         int nnqty = 0;
         TradedInst stock = stockList.getStock(order.getStock_id());
-        while(qty > 0) {
-            while(nextOrder) {
+        while (qty > 0) {
+            while (nextOrder) {
                 oldOrder = priceLeader.getOrderlist().poll();
-                if(oldOrder == null) {
+                if (oldOrder == null) {
                     if ((!its.hasNext()))
                         return false;
                     else {
                         priceLeader = its.next().getValue();
                         continue;
                     }
-                }
-                else {
-                    if(oldOrder.isDelflg())
+                } else {
+                    if (oldOrder.isDelflg())
                         continue;
                     break;
                 }
@@ -663,7 +663,7 @@ public class Matcher {
             order.setRemQty(order.getRemQty() - nnqty);
             oldOrder.setRemQty(oldOrder.getRemQty() - nnqty);
             priceLeader.setAccumQty(priceLeader.getAccumQty() - nnqty);
-            if(priceLeader.getAccumQty() <= 0) {
+            if (priceLeader.getAccumQty() <= 0) {
 
                 if (order.getType() == 0)
                     delPrcLdrList2.add(priceLeader.getPrior());
@@ -672,25 +672,24 @@ public class Matcher {
             }
             qty -= nnqty;
 
-            if(order.getType() == 0)
+            if (order.getType() == 0)
                 tradeOrder = getTradeOrder(order.getStock_id(), order.getOrder_id(), oldOrder.getOrder_id(),
-                        false,false, oldOrder.getOrder_price(),
+                        false, false, oldOrder.getOrder_price(),
                         nnqty, true, order.getOwner(), oldOrder.getOwner());
             else
                 tradeOrder = getTradeOrder(order.getStock_id(), oldOrder.getOrder_id(), order.getOrder_id(),
-                        false,false, oldOrder.getOrder_price(),
+                        false, false, oldOrder.getOrder_price(),
                         nnqty, true, oldOrder.getOwner(), order.getOwner());
 
 
-            if(order.getRemQty() <= 0)
+            if (order.getRemQty() <= 0)
                 tradeOrder.setBuyPoint(true);
             else
                 tradeOrder.setBuyPoint(false);
-            if(oldOrder.getRemQty() <= 0) {
+            if (oldOrder.getRemQty() <= 0) {
                 nextOrder = true;
                 tradeOrder.setSellPoint(true);
-            }
-            else {
+            } else {
                 nextOrder = false;
                 tradeOrder.setSellPoint(false);
             }
@@ -698,7 +697,7 @@ public class Matcher {
             record(stock, tradeOrder);
 
         }
-        if(oldOrder.getRemQty() > 0)
+        if (oldOrder.getRemQty() > 0)
             getPrcLdr(oldOrder).getOrderlist().add(oldOrder);
         removePrcLdr(stock);
         return true;
@@ -709,24 +708,24 @@ public class Matcher {
         stock.setNew_price(order.getTradePrice());
         stock.setTradeVolumn(stock.getTradeVolumn() + order.getExchangeAmount());
         stock.setTradeAmount(stock.getTradeAmount() + order.getExchangeAmount() * order.getTradePrice());
-        if(order.getTradePrice() > stock.getMaxPrice())
+        if (order.getTradePrice() > stock.getMaxPrice())
             stock.setMaxPrice(order.getTradePrice());
-        if(order.getTradePrice() < stock.getMinPrice())
+        if (order.getTradePrice() < stock.getMinPrice())
             stock.setMinPrice(order.getTradePrice());
     }
 
     //移除档位
-    public void removePrcLdr(TradedInst stock){
+    public void removePrcLdr(TradedInst stock) {
         Iterator<Double> myIter = delPrcLdrList.iterator();
         PriceLeader rmvLdr;
-        while(myIter.hasNext()) {
+        while (myIter.hasNext()) {
             double pri = myIter.next();
             rmvLdr = stock.getPrcList(0).remove(pri);
             prcLdrPool.putObj(rmvLdr);
         }
 
         myIter = delPrcLdrList2.iterator();
-        while(myIter.hasNext()) {
+        while (myIter.hasNext()) {
             double pri = myIter.next();
             rmvLdr = stock.getPrcList(1).remove(pri);
             prcLdrPool.putObj(rmvLdr);
@@ -735,34 +734,35 @@ public class Matcher {
         delPrcLdrList2.clear();
     }
 
-    public void backOrder(Morder order){
-        if(order == null)
+    public void backOrder(Morder order) {
+        if (order == null)
             return;
         order.setDelflg(true);
         MtradeOrder mtradeOrder = null;
-        if(order.getType() == 0)
+        if (order.getType() == 0)
             mtradeOrder = getTradeOrder(order.getStock_id(), order.getOrder_id(), -1, true,
-                    false, -1, order.getRemQty(),true, order.getOwner(), -1);
+                    false, -1, order.getRemQty(), true, order.getOwner(), -1);
         else
             mtradeOrder = getTradeOrder(order.getStock_id(), -1, order.getOrder_id(), false,
-                    true, -1, order.getRemQty(),true, -1, order.getOwner());
+                    true, -1, order.getRemQty(), true, -1, order.getOwner());
         System.out.println(mtradeOrder.toJson());
         rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE_B, RabbitConfig.ROUTINGKEY_C, mtradeOrder.toJson());
         /**
          * 记录成交单
          */
     }
+
     //连续竞价
-    public boolean continuousBidding(Morder order){
+    public boolean continuousBidding(Morder order) {
         order.setRemQty(order.getOrder_amount());
         TradedInst stock = stockList.getStock(order.getStock_id());
-        if(stock == null)
+        if (stock == null)
             return false;
         TreeMap<Double, PriceLeader> matchTree = stock.getPeerPrcTree(order.getType());
         int qty = match(order, matchTree.entrySet().iterator());
         LinkedList<MtradeOrder> list = null;
         //System.out.println(qty);
-        if(order.getTrade_straregy() != 0 && qty == 0)
+        if (order.getTrade_straregy() != 0 && qty == 0)
             backOrder(order);
         else {
             if (qty == 0) {
