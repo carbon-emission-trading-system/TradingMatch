@@ -75,7 +75,9 @@ public class Matcher {
 
     @RabbitListener(queues = RabbitConfig.QUEUE_B)
     public void delOrder(String content) {
+        logger.info("接收处理撤单队列当中的消息： " + content);
         delOrder(Integer.parseInt(content));
+
     }
 
 
@@ -111,7 +113,7 @@ public class Matcher {
             TradedInst stock1 = new TradedInst(stock.getStockId(), stock.getStockname(), stock.getPastClosePrice());
             stockList.addStock(stock1);
 
-            logger.info("初始化加入股票： " + stock.getStockId() + " " + stock.getStockname());
+            logger.info("初始化股票信息： " + stock.getStockId() + " " + stock.getStockname());
 
             RealTime1 real = getRealTime1(stock1);
             stockRedis.put(stock.getStockId() + "", real, -1);
