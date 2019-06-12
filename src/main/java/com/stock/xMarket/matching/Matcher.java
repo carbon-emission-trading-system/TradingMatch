@@ -107,6 +107,7 @@ public class Matcher {
     public void init(){
         //utils.stopMessageListener(RabbitConfig.QUEUE_A);
         logger.info("停止所有队列监听");
+
         List<TradedInst> temp = stockRepository.findAll();
         Iterator<TradedInst> iterator = temp.iterator();
         TradedInst stock = null;
@@ -114,7 +115,11 @@ public class Matcher {
             stock = iterator.next();
             stockList.addStock(new TradedInst(stock.getStockId(), stock.getStockname(), stock.getPastClosePrice()));
             logger.info("初始化加入股票： " + stock.getStockId() + " " + stock.getStockname());
+
+            RealTime1 real = getRealTime1(stock);
+            stockRedis.put(stock.getStockId()+"", real, -1);
         }
+
     }
 
     public String toString1(){
@@ -562,7 +567,7 @@ public class Matcher {
     //获取即时信息
     public RealTime1 getRealTime1(TradedInst stock) {
         return new RealTime1(stock.getStockId(), stock.getNew_price(), stock.getOpenPrice(),stock.getMaxPrice(),
-                stock.getMinPrice(), stock.getTradeVolumn(), stock.getTradeAmount(),getBuyFive(stock), getSellFive(stock));
+                stock.getMinPrice(), stock.getTradeVolumn(), stock.getPastClosePrice(), stock.getTradeAmount(),getBuyFive(stock), getSellFive(stock));
     }
 
     //计算成交量
