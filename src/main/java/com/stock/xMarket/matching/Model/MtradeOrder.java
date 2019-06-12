@@ -44,6 +44,7 @@ public class MtradeOrder {
         jsonObject.put("sellPoint", isSellPoint());
         jsonObject.put("buyPoint", isBuyPoint());
         jsonObject.put("date", getDate());
+        jsonObject.put("time", new java.sql.Time(getDate().getTime()));
         jsonObject.put("tradePrice", getTradePrice());
         jsonObject.put("exchangeAmount", getExchangeAmount());
         jsonObject.put("tradeType", isTradeType());
