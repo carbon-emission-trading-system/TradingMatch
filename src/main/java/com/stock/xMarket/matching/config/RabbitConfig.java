@@ -67,48 +67,48 @@ public class RabbitConfig {
         RabbitTemplate template = new RabbitTemplate(connectionFactory());
         return template;
     }
-//
-//    @Bean
-//    public DirectExchange defaultExchange() {
-//        return new DirectExchange(EXCHANGE_A);
-//    }
-//    @Bean
-//    public Queue queueA() {
-//        return new Queue(QUEUE_A, true); //队列持久
-//    }
-//
-//    @Bean
-//    public Queue queueB() {
-//        return new Queue(QUEUE_B, true); //队列持久
-//    }
-//
-//    @Bean
-//    public Queue queueC() {
-//        return new Queue(QUEUE_C, true); //队列持久
-//    }
-//
-//    @Bean
-//    public Queue queueD() {
-//        return new Queue(QUEUE_D, true); //队列持久
-//    }
-//
-//    @Bean
-//    public Binding binding() {
-//
-//        return BindingBuilder.bind(queueA()).to(defaultExchange()).with(RabbitConfig.ROUTINGKEY_A);
-//    }
-//    @Bean
-//    public Binding bindingC(){
-//        return BindingBuilder.bind(queueC()).to(defaultExchange()).with(RabbitConfig.ROUTINGKEY_C);
-//    }
-//
-//    @Bean
-//    public Binding bindingB(){
-//        return BindingBuilder.bind(queueB()).to(defaultExchange()).with(RabbitConfig.ROUTINGKEY_B);
-//    }
-//
-//    @Bean
-//    public Binding bindingD(){
-//        return BindingBuilder.bind(queueB()).to(defaultExchange()).with(RabbitConfig.ROUTINGKEY_D);
-//    }
+
+    @Bean
+    public DirectExchange defaultExchange() {
+        return new DirectExchange(EXCHANGE_A);
+    }
+    @Bean
+    public Queue queueA() {
+        return new Queue(QUEUE_A, true); //队列持久
+    }
+
+    @Bean
+    public Queue queueB() {
+        return new Queue(QUEUE_B, true); //队列持久
+    }
+
+    @Bean
+    public Queue queueC() {
+        return new Queue(QUEUE_C, true); //队列持久
+    }
+
+    @Bean
+    public Queue queueD() {
+        return new Queue(QUEUE_D, true); //队列持久
+    }
+
+    @Bean
+    public Binding binding() {
+
+        return BindingBuilder.bind(queueA()).to(defaultExchange()).with(RabbitConfig.ROUTINGKEY_A);
+    }
+    @Bean
+    public Binding bindingC(){
+        return BindingBuilder.bind(queueC()).to(defaultExchange()).with(RabbitConfig.ROUTINGKEY_C);
+    }
+
+    @Bean
+    public Binding bindingB(){
+        return BindingBuilder.bind(queueB()).to(defaultExchange()).with(RabbitConfig.ROUTINGKEY_B);
+    }
+
+    @Bean
+    public Binding bindingD(){
+        return BindingBuilder.bind(queueB()).to(defaultExchange()).with(RabbitConfig.ROUTINGKEY_D);
+    }
 }
