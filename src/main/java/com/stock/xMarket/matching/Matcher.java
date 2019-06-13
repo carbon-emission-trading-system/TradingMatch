@@ -726,26 +726,40 @@ public class Matcher {
             }
             qty -= nnqty;
 
-            if (order.getType() == 0)
+            if (order.getType() == 0) {
                 tradeOrder = getTradeOrder(order.getStock_id(), order.getOrder_id(), oldOrder.getOrder_id(),
                         false, false, oldOrder.getOrder_price(),
                         nnqty, true, order.getOwner(), oldOrder.getOwner());
-            else
+
+                if (order.getRemQty() <= 0)
+                    tradeOrder.setBuyPoint(true);
+                else
+                    tradeOrder.setBuyPoint(false);
+                if (oldOrder.getRemQty() <= 0) {
+                    nextOrder = true;
+                    tradeOrder.setSellPoint(true);
+                } else {
+                    nextOrder = false;
+                    tradeOrder.setSellPoint(false);
+                }
+            }
+            else {
                 tradeOrder = getTradeOrder(order.getStock_id(), oldOrder.getOrder_id(), order.getOrder_id(),
                         false, false, oldOrder.getOrder_price(),
                         nnqty, true, oldOrder.getOwner(), order.getOwner());
-
-
-            if (order.getRemQty() <= 0)
-                tradeOrder.setBuyPoint(true);
-            else
-                tradeOrder.setBuyPoint(false);
-            if (oldOrder.getRemQty() <= 0) {
-                nextOrder = true;
-                tradeOrder.setSellPoint(true);
-            } else {
-                nextOrder = false;
-                tradeOrder.setSellPoint(false);
+                if (oldOrder.getRemQty() <= 0) {
+                    nextOrder = true;
+                    tradeOrder.setBuyPoint(true);
+                }
+                else {
+                    nextOrder = false;
+                    tradeOrder.setBuyPoint(false);
+                }
+                if (order.getRemQty() <= 0) {
+                    tradeOrder.setSellPoint(true);
+                }
+                else
+                    tradeOrder.setSellPoint(false);
             }
             logger.info("生成成交单：" + tradeOrder.toJson());
             record(stock, tradeOrder);
