@@ -303,7 +303,7 @@ public class Matcher {
             stock.setNew_price(tradePrice);
         
         }
-        mtradeOrder.setTradeOrderId(Long.parseLong(String.valueOf(System.currentTimeMillis())+String.valueOf(sellerId+buyerId)));
+        mtradeOrder.setTradeOrderId(Long.parseLong(String.valueOf(System.currentTimeMillis())));
         mtradeOrder.setStockID(stockID);
         mtradeOrder.setBuyOrderId(buyOrderId);
         mtradeOrder.setSellOrderId(sellOrderId);
