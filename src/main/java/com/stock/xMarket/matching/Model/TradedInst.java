@@ -51,8 +51,8 @@ public class TradedInst {
         this.pastClosePrice = pastClosePrice;
         this.closePrice = 0.0;
         this.openPrice = 0.0;
-        this.maxPrice = 0.0;
-        this.minPrice = 0.0;
+        this.maxPrice = Double.MIN_VALUE;
+        this.minPrice = Double.MAX_VALUE;
         this.new_price = 0.0;
         this.tradeVolumn = 0;
         this.tradeAmount = 0.0;
