@@ -48,7 +48,7 @@ public class Matcher {
     private LinkedList<Double> delPrcLdrList;
     private LinkedList<Double> delPrcLdrList2;
     //订单列表 订单id 订单
-    private TreeMap<Integer, Morder> orderList;
+    private TreeMap<Long, Morder> orderList;
     //构造函数
 
     public Matcher() throws InstantiationException, IllegalAccessException {
@@ -58,7 +58,7 @@ public class Matcher {
         this.tradeOrderPool = new TradeOrderPool(10000);
         this.delPrcLdrList = new LinkedList<Double>();
         this.delPrcLdrList2 = new LinkedList<Double>();
-        this.orderList = new TreeMap<Integer, Morder>();
+        this.orderList = new TreeMap<Long, Morder>();
     }
 
     public Matcher(int prcLdrCnt, int orderCnt, int tradeOrderCnt)
@@ -69,7 +69,7 @@ public class Matcher {
         this.tradeOrderPool = new TradeOrderPool(tradeOrderCnt);
         this.delPrcLdrList = new LinkedList<Double>();
         this.delPrcLdrList2 = new LinkedList<Double>();
-        this.orderList = new TreeMap<Integer, Morder>();
+        this.orderList = new TreeMap<Long, Morder>();
     }
 
 
@@ -287,7 +287,7 @@ public class Matcher {
     }
 
     //生成成交单
-    public MtradeOrder getTradeOrder(int stockID, int buyOrderId, int sellOrderId,
+    public MtradeOrder getTradeOrder(int stockID, long buyOrderId, long sellOrderId,
                                      boolean buyPoint, boolean sellPoint, double tradePrice,
                                      int exchangeAmount, boolean tradeType, int buyerId, int sellerId) {
         MtradeOrder mtradeOrder = allocTradeOrder();
@@ -303,7 +303,7 @@ public class Matcher {
             stock.setNew_price(tradePrice);
             id = id + buyOrderId;
         }
-        mtradeOrder.setTradeOrderId(Integer.parseInt(id) - 1000000000 + (int) System.currentTimeMillis());
+        mtradeOrder.setTradeOrderId(Long.parseLong(id) - 1000000000 + System.currentTimeMillis());
         mtradeOrder.setStockID(stockID);
         mtradeOrder.setBuyOrderId(buyOrderId);
         mtradeOrder.setSellOrderId(sellOrderId);

@@ -11,7 +11,7 @@ import java.util.Date;
 
 public class Morder {
     //订单id
-    private int order_id;
+    private long order_id;
     //股票id
     private int stock_id;
     //买卖标志
@@ -47,7 +47,7 @@ public class Morder {
         this.delflg = false;
         //this.owner = order.getInteger("owner");
     }
-    public Morder(int order_id, int stock_id, int type,
+    public Morder(long order_id, int stock_id, int type,
 
     		int trade_straregy, int order_amount, float order_price){
         this.order_id = order_id;
@@ -65,7 +65,7 @@ public class Morder {
     	return "" + order_amount + " " + type + " " + order_price;
     }
     
-    public int getOrder_id() {
+    public long getOrder_id() {
         return order_id;
     }
 

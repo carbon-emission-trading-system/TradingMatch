@@ -7,13 +7,13 @@ import java.util.Date;
 
 public class MtradeOrder {
     //成交单id
-    private int tradeOrderId;
+    private long tradeOrderId;
     //股票id
     private int stockID;
     //买方委托id
-    private int buyOrderId;
+    private long buyOrderId;
     //卖方委托id
-    private int sellOrderId;
+    private long sellOrderId;
     //卖方标志
     private boolean sellPoint;
     //买方标志
@@ -53,11 +53,11 @@ public class MtradeOrder {
         return jsonObject.toJSONString();
     }
 
-    public int getTradeOrderId() {
+    public long getTradeOrderId() {
         return tradeOrderId;
     }
 
-    public void setTradeOrderId(int tradeOrderId) {
+    public void setTradeOrderId(long tradeOrderId) {
         this.tradeOrderId = tradeOrderId;
     }
 
@@ -69,19 +69,19 @@ public class MtradeOrder {
         this.stockID = stockID;
     }
 
-    public int getBuyOrderId() {
+    public long getBuyOrderId() {
         return buyOrderId;
     }
 
-    public void setBuyOrderId(int buyOrderId) {
+    public void setBuyOrderId(long buyOrderId) {
         this.buyOrderId = buyOrderId;
     }
 
-    public int getSellOrderId() {
+    public long getSellOrderId() {
         return sellOrderId;
     }
 
-    public void setSellOrderId(int sellOrderId) {
+    public void setSellOrderId(long sellOrderId) {
         this.sellOrderId = sellOrderId;
     }
 
