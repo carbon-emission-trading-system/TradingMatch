@@ -301,9 +301,9 @@ public class Matcher {
         else {
             TradedInst stock = stockList.getStock(stockID);
             stock.setNew_price(tradePrice);
-            id = id + buyOrderId;
+        
         }
-        mtradeOrder.setTradeOrderId(Long.parseLong(id) - 1000000000 + System.currentTimeMillis());
+        mtradeOrder.setTradeOrderId(Long.parseLong(String.valueOf(System.currentTimeMillis())+String.valueOf(sellerId+buyerId)));
         mtradeOrder.setStockID(stockID);
         mtradeOrder.setBuyOrderId(buyOrderId);
         mtradeOrder.setSellOrderId(sellOrderId);
