@@ -303,7 +303,7 @@ public class Matcher {
             stock.setNew_price(tradePrice);
         
         }
-        mtradeOrder.setTradeOrderId(Long.parseLong(String.valueOf(System.currentTimeMillis())));
+        mtradeOrder.setTradeOrderId(System.currentTimeMillis());
         mtradeOrder.setStockID(stockID);
         mtradeOrder.setBuyOrderId(buyOrderId);
         mtradeOrder.setSellOrderId(sellOrderId);
@@ -668,7 +668,7 @@ public class Matcher {
                     break;
             } else {
                 if (order.getOrder_price() <= priceLeader.getPrice())
-                    qty += min(order.getRemQty(), priceLeader.getAccumQty());
+                    qty += min(order.getRemQty() - qty, priceLeader.getAccumQty());
                 else
                     break;
             }
