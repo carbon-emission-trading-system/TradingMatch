@@ -35,7 +35,7 @@ public class Morder {
     }
     
     public Morder(JSONObject order) {
-        this.order_id = order.getInteger("orderId");
+        this.order_id = order.getLong("orderId");
         this.owner=order.getInteger("userId");
         this.stock_id = order.getInteger("stockId");
         this.date = new Date();
@@ -65,15 +65,16 @@ public class Morder {
     	return "" + order_amount + " " + type + " " + order_price;
     }
     
+   
     public long getOrder_id() {
-        return order_id;
-    }
+		return order_id;
+	}
 
-    public void setOrder_id(int order_id) {
-        this.order_id = order_id;
-    }
+	public void setOrder_id(long order_id) {
+		this.order_id = order_id;
+	}
 
-    public int getStock_id() {
+	public int getStock_id() {
         return stock_id;
     }
 

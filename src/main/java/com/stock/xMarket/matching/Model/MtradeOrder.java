@@ -53,15 +53,15 @@ public class MtradeOrder {
         return jsonObject.toJSONString();
     }
 
+ 
+
     public long getTradeOrderId() {
-        return tradeOrderId;
-    }
-
-    public void setTradeOrderId(long tradeOrderId) {
-        this.tradeOrderId = tradeOrderId;
-    }
-
-    public int getStockID() {
+		return tradeOrderId;
+	}
+	public void setTradeOrderId(long tradeOrderId) {
+		this.tradeOrderId = tradeOrderId;
+	}
+	public int getStockID() {
         return stockID;
     }
 
