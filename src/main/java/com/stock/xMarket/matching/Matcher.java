@@ -315,7 +315,7 @@ public class Matcher {
         mtradeOrder.setTradePrice(tradePrice);
         mtradeOrder.setBuyerId(buyerId);
         mtradeOrder.setSellerId(sellerId);
-        logger.info("生成成交单：" + mtradeOrder.toJson());
+
         return mtradeOrder;
     }
 
@@ -609,6 +609,7 @@ public class Matcher {
                     nextSellOrd = false;
                     tradeOrder.setSellPoint(false);
                 }
+                logger.info("生成成交单：" + tradeOrder.toJson());
                 record(stock, tradeOrder);
 
             }
@@ -746,7 +747,7 @@ public class Matcher {
                 nextOrder = false;
                 tradeOrder.setSellPoint(false);
             }
-
+            logger.info("生成成交单：" + tradeOrder.toJson());
             record(stock, tradeOrder);
 
         }
