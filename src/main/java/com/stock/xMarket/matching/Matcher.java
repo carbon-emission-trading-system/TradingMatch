@@ -113,7 +113,7 @@ public class Matcher {
 
             logger.info("初始化股票信息： " + stock.getStockId() + " " + stock.getStockname());
 
-            stock.setNew_price(stock.getPastClosePrice());
+            stock1.setNew_price(stock.getPastClosePrice());
             RealTime1 real = getRealTime1(stock1);
             stockRedis.put(stock.getStockId() + "", real, -1);
             logger.info("初始化股票: " + stock.getStockId() + " 实时信息");
