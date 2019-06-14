@@ -635,8 +635,13 @@ public class Matcher {
         int level = 0;
         TradedInst stock = stockList.getStock(order.getStock_id());
         if (order.getTrade_straregy() == 1 || order.getTrade_straregy() == 2 || order.getTrade_straregy() == 5
-                || order.getTrade_straregy() == 6 || order.getTrade_straregy() == 7)
-            order.setOrder_price(Integer.MAX_VALUE);
+                || order.getTrade_straregy() == 6 || order.getTrade_straregy() == 7) {
+        	if(order.getType() == 0)
+        		order.setOrder_price(Double.MAX_VALUE);
+        	else
+        		order.setOrder_price(Double.MIN_VALUE);
+            
+        }
         else if (order.getTrade_straregy() == 3) {
             if (stock.getBestPeerPrcLdr(order.getType()) == null)
                 return 0;
@@ -813,7 +818,6 @@ public class Matcher {
         else
             mtradeOrder = getTradeOrder(order.getStock_id(), -1, order.getOrder_id(), false,
                     true, -1, order.getRemQty(), true, -1, order.getOwner());
-        System.out.println(mtradeOrder.toJson());
         rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE_B, RabbitConfig.ROUTINGKEY_C, mtradeOrder.toJson());
         /**
          * 记录成交单
@@ -845,7 +849,6 @@ public class Matcher {
                 //最优五档即时成交 剩余撤销 //即时成交剩余撤单
                 else if (order.getTrade_straregy() == 1 || order.getTrade_straregy() == 5
                         || order.getTrade_straregy() == 6) {
-                    System.out.println(qty);
                     doBdding(order, qty, matchTree.entrySet().iterator());
                     if (qty < order.getOrder_amount())
                         backOrder(order);
