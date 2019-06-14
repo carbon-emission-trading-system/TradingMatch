@@ -496,7 +496,8 @@ public class Matcher {
             if (result.getVolume() <= 0) {
                 Calendar calendar = Calendar.getInstance();
                 int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                if (hour < 12) {
+                //改回12
+                if (hour < 18) {
                     stock.setNew_price(stock.getPastClosePrice());
                     stock.setOpenPrice(stock.getNew_price());
                 }
@@ -510,7 +511,7 @@ public class Matcher {
             else {
                 Calendar calendar = Calendar.getInstance();
                 int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                if (hour < 12) {
+                if (hour < 18) {
                     stock.setOpenPrice(result.getPrice());
                 }
                 else
