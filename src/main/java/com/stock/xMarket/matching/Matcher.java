@@ -12,6 +12,7 @@ import com.stock.xMarket.matching.redis.RealTime1Redis;
 import com.stock.xMarket.model.Gear;
 import com.stock.xMarket.model.RealTime1;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 import org.slf4j.Logger;
@@ -19,10 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 
@@ -417,7 +415,8 @@ public class Matcher {
             }
             String sid = String.valueOf(stock.getStockId());
             if (sid.startsWith("600")) {
-                result.setPrice((lastBuyPrice + lastSellPrice) / 2);
+                DecimalFormat df = new DecimalFormat("#.00");
+                result.setPrice(Double.parseDouble(df.format((lastBuyPrice + lastSellPrice) / 2)));
                 result.setVolume(totalMatchedQty);
                 return result;
             } else {
@@ -464,7 +463,7 @@ public class Matcher {
                     else {
                         Calendar calendar = Calendar.getInstance();
                         int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                        if (hour < 12)
+                        if (hour < 18)
                             result.setPrice(stock.getPastClosePrice());
                         else
                             result.setPrice(stock.getNew_price());
