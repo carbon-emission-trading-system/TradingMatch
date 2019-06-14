@@ -640,20 +640,19 @@ public class Matcher {
         		order.setOrder_price(Double.MAX_VALUE);
         	else
         		order.setOrder_price(Double.MIN_VALUE);
-            
         }
         else if (order.getTrade_straregy() == 3) {
             if (stock.getBestPeerPrcLdr(order.getType()) == null)
-                return 0;
+                return -1;
             PriceLeader bestLeader = stock.getBestPeerPrcLdr(order.getType()).getValue();
             order.setOrder_price(bestLeader.getPrice());
         } else if (order.getTrade_straregy() == 4) {
             if (order.getType() == 0) {
                 if (stock.getBestPeerPrcLdr(1) == null)
-                    return 0;
+                    return -1;
             } else {
                 if (stock.getBestPeerPrcLdr(0) == null)
-                    return 0;
+                    return -1;
             }
             PriceLeader bestLeader = null;
             if (order.getType() == 0)
@@ -834,7 +833,10 @@ public class Matcher {
         int qty = match(order, matchTree.entrySet().iterator());
         LinkedList<MtradeOrder> list = null;
         //System.out.println(qty);
-        if (order.getTrade_straregy() != 0 && qty == 0)
+        if (order.getTrade_straregy() != 0 && qty == -1)
+            backOrder(order);
+        else if(order.getTrade_straregy() != 0 && order.getTrade_straregy() != 3 && order.getTrade_straregy() != 4
+                && qty == 0)
             backOrder(order);
         else {
             if (qty == 0) {
