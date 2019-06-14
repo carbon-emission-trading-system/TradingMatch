@@ -626,7 +626,8 @@ public class Matcher {
     //获取即时信息
     public RealTime1 getRealTime1(TradedInst stock) {
         return new RealTime1(stock.getStockId(), stock.getNew_price(), stock.getOpenPrice(), stock.getMaxPrice(),
-                stock.getMinPrice(), stock.getTradeVolumn(), stock.getPastClosePrice(), stock.getTradeAmount(), getBuyFive(stock), getSellFive(stock));
+                stock.getMinPrice(), stock.getTradeVolumn(), stock.getPastClosePrice(), stock.getTradeAmount(),
+                stock.getClosePrice(), getBuyFive(stock), getSellFive(stock));
     }
 
     //计算成交量
