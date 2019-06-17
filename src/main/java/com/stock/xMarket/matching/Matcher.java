@@ -74,7 +74,7 @@ public class Matcher {
     @RabbitListener(queues = RabbitConfig.QUEUE_B)
     public void delOrder(String content) {
         logger.info("接收处理撤单队列当中的消息： " + content);
-        delOrder(Integer.parseInt(content));
+        delOrder(Long.parseLong(content));
 
     }
 
@@ -194,7 +194,7 @@ public class Matcher {
     }
 
     //撤单
-    public final boolean delOrder(int orderId) {
+    public final boolean delOrder(long orderId) {
         if (orderId <= 0) {
             logger.error("传入订单id小于0");
             return false;
