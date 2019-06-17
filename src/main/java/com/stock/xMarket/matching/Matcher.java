@@ -113,7 +113,7 @@ public class Matcher {
 
             logger.info("初始化股票信息： " + stock.getStockId() + " " + stock.getStockname());
 
-            stock.setNew_price(stock.getPastClosePrice());
+            stock1.setNew_price(stock.getPastClosePrice());
             RealTime1 real = getRealTime1(stock1);
             stockRedis.put(stock.getStockId() + "", real, -1);
             logger.info("初始化股票: " + stock.getStockId() + " 实时信息");
@@ -482,7 +482,7 @@ public class Matcher {
     //集合竞价撮合
     @Scheduled(cron = "0 25 9 ? * MON-FRI")
     @Scheduled(cron = "0 57 14 ? * MON-FRI")
-    @Scheduled(cron = "0 45 14 ? * MON-FRI")
+    @Scheduled(cron = "0 45 16 ? * MON-FRI")
     public boolean doCallAuction() {
         Iterator<Map.Entry<Integer, TradedInst>> its = stockList.getList().entrySet().iterator();
         while (its.hasNext()) {
