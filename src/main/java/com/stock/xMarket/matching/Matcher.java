@@ -215,7 +215,7 @@ public class Matcher {
             else
                 delPrcLdrList2.add(priceLeader.getPrior());
         }
-
+        orderList.remove(orderId);
         MtradeOrder tradeOrder = null;
         if (order.getType() == 0)
             tradeOrder = getTradeOrder(order.getStock_id(), orderId, -1, true, false,
