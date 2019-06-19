@@ -9,7 +9,7 @@ public class MtradeOrder {
     //成交单id
     private long tradeOrderId;
     //股票id
-    private int stockID;
+    private String stockID;
     //买方委托id
     private long buyOrderId;
     //卖方委托id
@@ -61,11 +61,11 @@ public class MtradeOrder {
 	public void setTradeOrderId(long tradeOrderId) {
 		this.tradeOrderId = tradeOrderId;
 	}
-	public int getStockID() {
+	public String getStockID() {
         return stockID;
     }
 
-    public void setStockID(int stockID) {
+    public void setStockID(String stockID) {
         this.stockID = stockID;
     }
 

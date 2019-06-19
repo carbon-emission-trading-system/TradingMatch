@@ -13,7 +13,7 @@ public class Morder {
     //订单id
     private long order_id;
     //股票id
-    private int stock_id;
+    private String stock_id;
     //买卖标志
     private int type;
     //时间
@@ -37,7 +37,7 @@ public class Morder {
     public Morder(JSONObject order) {
         this.order_id = order.getLong("orderId");
         this.owner=order.getInteger("userId");
-        this.stock_id = order.getInteger("stockId");
+        this.stock_id = order.getString("stockId");
         this.date = new Date();
         this.type = order.getInteger("type");
         this.trade_straregy = order.getInteger("tradeStraregy");
@@ -47,7 +47,7 @@ public class Morder {
         this.delflg = false;
         //this.owner = order.getInteger("owner");
     }
-    public Morder(long order_id, int stock_id, int type,
+    public Morder(long order_id, String stock_id, int type,
 
     		int trade_straregy, int order_amount, float order_price){
         this.order_id = order_id;
@@ -74,11 +74,11 @@ public class Morder {
 		this.order_id = order_id;
 	}
 
-	public int getStock_id() {
+	public String getStock_id() {
         return stock_id;
     }
 
-    public void setStock_id(int stock_id) {
+    public void setStock_id(String stock_id) {
         this.stock_id = stock_id;
     }
 

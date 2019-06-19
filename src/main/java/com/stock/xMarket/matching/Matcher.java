@@ -120,14 +120,6 @@ public class Matcher {
         }
     }
 
-    public String toString1() {
-        return stockList.getStock(600446).toString1();
-    }
-
-    public String toString2() {
-        return stockList.getStock(600446).toString2();
-    }
-
     //买五
     public List<Gear> getBuyFive(TradedInst stock) {
         List<Gear> list = new LinkedList<Gear>();
@@ -286,7 +278,7 @@ public class Matcher {
     }
 
     //生成成交单
-    public MtradeOrder getTradeOrder(int stockID, long buyOrderId, long sellOrderId,
+    public MtradeOrder getTradeOrder(String stockID, long buyOrderId, long sellOrderId,
                                      boolean buyPoint, boolean sellPoint, double tradePrice,
                                      int exchangeAmount, boolean tradeType, int buyerId, int sellerId) {
         MtradeOrder mtradeOrder = allocTradeOrder();

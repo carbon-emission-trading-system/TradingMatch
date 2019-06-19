@@ -24,7 +24,7 @@ public class TradedInstList {
     }
 
     //获取股票
-    public final TradedInst getStock(int stockId) {
+    public final TradedInst getStock(String stockId) {
         return list.get(stockId);
     }
 }
