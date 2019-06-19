@@ -414,8 +414,7 @@ public class Matcher {
                     }
                 }
             }
-            String sid = String.valueOf(stock.getStockId());
-            if (sid.startsWith("600")) {
+            if (stock.getStockId().startsWith("600")) {
                 DecimalFormat df = new DecimalFormat("#.00");
                 result.setPrice(Double.parseDouble(df.format((lastBuyPrice + lastSellPrice) / 2)));
                 result.setVolume(totalMatchedQty);
@@ -464,7 +463,7 @@ public class Matcher {
                     else {
                         Calendar calendar = Calendar.getInstance();
                         int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                        if (hour < 18)
+                        if (hour < 12)
                             result.setPrice(stock.getPastClosePrice());
                         else
                             result.setPrice(stock.getNew_price());
@@ -484,7 +483,7 @@ public class Matcher {
     @Scheduled(cron = "0 57 14 ? * MON-FRI")
     @Scheduled(cron = "0 45 16 ? * MON-FRI")
     public boolean doCallAuction() {
-        Iterator<Map.Entry<Integer, TradedInst>> its = stockList.getList().entrySet().iterator();
+        Iterator<Map.Entry<String, TradedInst>> its = stockList.getList().entrySet().iterator();
         while (its.hasNext()) {
             TradedInst stock = its.next().getValue();
             CallAuctionResult result = calcCallAuction(stock);
@@ -497,7 +496,7 @@ public class Matcher {
                 Calendar calendar = Calendar.getInstance();
                 int hour = calendar.get(Calendar.HOUR_OF_DAY);
                 //改回12
-                if (hour < 18) {
+                if (hour < 12) {
                     stock.setNew_price(stock.getPastClosePrice());
                     stock.setOpenPrice(stock.getNew_price());
                 }
@@ -511,7 +510,7 @@ public class Matcher {
             else {
                 Calendar calendar = Calendar.getInstance();
                 int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                if (hour < 18) {
+                if (hour < 12) {
                     stock.setOpenPrice(result.getPrice());
                 }
                 else

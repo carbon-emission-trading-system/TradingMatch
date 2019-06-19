@@ -11,7 +11,7 @@ public class TradedInst {
     //股票代码
     @Id
     @Column(name = "stock_id")
-    private int stockId;
+    private String stockId;
     //股票简称
     @Column(name = "stock_name")
     private String stockname;
@@ -44,7 +44,7 @@ public class TradedInst {
 
     }
 
-    public TradedInst(int stockId, String stockName, double pastClosePrice)
+    public TradedInst(String stockId, String stockName, double pastClosePrice)
     {
         this.stockId = stockId;
         this.stockname = stockName;
@@ -131,11 +131,11 @@ public class TradedInst {
         }
         return string;
     }
-    public int getStockId() {
+    public String getStockId() {
         return stockId;
     }
 
-    public void setStockId(int stockId) {
+    public void setStockId(String stockId) {
         this.stockId = stockId;
     }
 

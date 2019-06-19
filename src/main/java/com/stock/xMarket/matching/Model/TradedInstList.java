@@ -7,13 +7,13 @@ public class TradedInstList {
     private static int INIT_CAPACITY = 100;
 
     //撮合列表<股票id，股票容器>
-    private HashMap<Integer,TradedInst> list;
+    private HashMap<String,TradedInst> list;
 
     public TradedInstList(){
-        list = new HashMap<Integer, TradedInst>(INIT_CAPACITY);
+        list = new HashMap<String, TradedInst>(INIT_CAPACITY);
     }
 
-    public HashMap<Integer,TradedInst> getList() {
+    public HashMap<String,TradedInst> getList() {
         return this.list;
     }
 
