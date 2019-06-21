@@ -39,7 +39,10 @@ public class TradedInst {
     private int tradeVolumn;
     @Transient
     private Double tradeAmount;
-
+    @Transient
+    private int invol;
+    @Transient
+    private int outerDisc;
     public TradedInst(){
 
     }
@@ -58,6 +61,8 @@ public class TradedInst {
         this.tradeAmount = 0.0;
         buyPrcList = new TreeMap<Double, PriceLeader>();
         sellPrcList = new TreeMap<Double, PriceLeader>();
+        this.invol = 0;
+        this.outerDisc = 0;
     }
     // 获得本方价位列表树
     public final TreeMap<Double, PriceLeader> getPrcList(int isBuy)
@@ -209,5 +214,21 @@ public class TradedInst {
 
     public void setTradeAmount(double tradeAmount) {
         this.tradeAmount = tradeAmount;
+    }
+
+    public int getInvol() {
+        return invol;
+    }
+
+    public void setInvol(int invol) {
+        this.invol = invol;
+    }
+
+    public int getOuterDisc() {
+        return outerDisc;
+    }
+
+    public void setOuterDisc(int outerDisc) {
+        this.outerDisc = outerDisc;
     }
 }

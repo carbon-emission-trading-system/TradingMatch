@@ -211,10 +211,10 @@ public class Matcher {
         MtradeOrder tradeOrder = null;
         if (order.getType() == 0)
             tradeOrder = getTradeOrder(order.getStock_id(), orderId, -1, true, false,
-                    -1, order.getRemQty(), true, order.getOwner(), -1);
+                    -1, order.getRemQty(), -1, order.getOwner(), -1);
         else
             tradeOrder = getTradeOrder(order.getStock_id(), -1, orderId, false, true,
-                    -1, order.getRemQty(), true, -1, order.getOwner());
+                    -1, order.getRemQty(), -1, -1, order.getOwner());
 
         logger.info("生成撤单信息: " + tradeOrder.toJson());
 
@@ -280,7 +280,7 @@ public class Matcher {
     //生成成交单
     public MtradeOrder getTradeOrder(String stockID, long buyOrderId, long sellOrderId,
                                      boolean buyPoint, boolean sellPoint, double tradePrice,
-                                     int exchangeAmount, boolean tradeType, int buyerId, int sellerId) {
+                                     int exchangeAmount, int tradeType, int buyerId, int sellerId) {
         MtradeOrder mtradeOrder = allocTradeOrder();
         String id = "";
 
@@ -301,7 +301,7 @@ public class Matcher {
         mtradeOrder.setBuyPoint(buyPoint);
         mtradeOrder.setSellPoint(sellPoint);
         mtradeOrder.setExchangeAmount(exchangeAmount);
-        mtradeOrder.setTradeType(true);
+        mtradeOrder.setTradeType(tradeType);
         mtradeOrder.setDate(new Date());
         mtradeOrder.setTradePrice(tradePrice);
         mtradeOrder.setBuyerId(buyerId);
@@ -585,7 +585,7 @@ public class Matcher {
                 remainQty -= qty;
 
                 tradeOrder = getTradeOrder(buyOrd.getStock_id(), buyOrd.getOrder_id(), sellOrd.getOrder_id(),
-                        false, false, result.getPrice(), qty, true, buyOrd.getOwner(), sellOrd.getOwner());
+                        false, false, result.getPrice(), qty, -1, buyOrd.getOwner(), sellOrd.getOwner());
 
                 if (buyOrd.getRemQty() <= 0) {
                     nextBuyOrd = true;
@@ -618,7 +618,7 @@ public class Matcher {
     public RealTime1 getRealTime1(TradedInst stock) {
         return new RealTime1(stock.getStockId(), stock.getNew_price(), stock.getOpenPrice(), stock.getMaxPrice(),
                 stock.getMinPrice(), stock.getTradeVolumn(), stock.getPastClosePrice(), stock.getTradeAmount(),
-                stock.getClosePrice(), getBuyFive(stock), getSellFive(stock));
+                stock.getClosePrice(), getBuyFive(stock), getSellFive(stock), stock.getInvol(), stock.getOuterDisc());
     }
 
     //计算成交量
@@ -726,7 +726,7 @@ public class Matcher {
             if (order.getType() == 0) {
                 tradeOrder = getTradeOrder(order.getStock_id(), order.getOrder_id(), oldOrder.getOrder_id(),
                         false, false, oldOrder.getOrder_price(),
-                        nnqty, true, order.getOwner(), oldOrder.getOwner());
+                        nnqty, 0, order.getOwner(), oldOrder.getOwner());
 
                 if (order.getRemQty() <= 0)
                     tradeOrder.setBuyPoint(true);
@@ -743,7 +743,7 @@ public class Matcher {
             else {
                 tradeOrder = getTradeOrder(order.getStock_id(), oldOrder.getOrder_id(), order.getOrder_id(),
                         false, false, oldOrder.getOrder_price(),
-                        nnqty, true, oldOrder.getOwner(), order.getOwner());
+                        nnqty, 1, oldOrder.getOwner(), order.getOwner());
                 if (oldOrder.getRemQty() <= 0) {
                     nextOrder = true;
                     tradeOrder.setBuyPoint(true);
@@ -777,6 +777,10 @@ public class Matcher {
             stock.setMaxPrice(order.getTradePrice());
         if (order.getTradePrice() < stock.getMinPrice())
             stock.setMinPrice(order.getTradePrice());
+        if(order.getTradeType() == 0)
+            stock.setInvol(stock.getInvol() + order.getExchangeAmount());
+        else
+            stock.setOuterDisc(stock.getOuterDisc() + order.getExchangeAmount());
     }
 
     //移除档位
@@ -806,10 +810,10 @@ public class Matcher {
         MtradeOrder mtradeOrder = null;
         if (order.getType() == 0)
             mtradeOrder = getTradeOrder(order.getStock_id(), order.getOrder_id(), -1, true,
-                    false, -1, order.getRemQty(), true, order.getOwner(), -1);
+                    false, -1, order.getRemQty(), -1, order.getOwner(), -1);
         else
             mtradeOrder = getTradeOrder(order.getStock_id(), -1, order.getOrder_id(), false,
-                    true, -1, order.getRemQty(), true, -1, order.getOwner());
+                    true, -1, order.getRemQty(), -1, -1, order.getOwner());
         rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE_B, RabbitConfig.ROUTINGKEY_C, mtradeOrder.toJson());
         /**
          * 记录成交单

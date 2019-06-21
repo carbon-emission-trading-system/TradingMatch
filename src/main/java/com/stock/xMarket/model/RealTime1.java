@@ -15,10 +15,15 @@ public class RealTime1 implements Serializable {
     private List<Gear> buyOneToFive;//买一买五
     private List<Gear> sellOneToFive;//卖一卖五
 	private double closePrice;
- 
+	private int invol;
+	private int outerDisc;
 
-    public RealTime1(String stockId, double lastTradePrice, double openPrice, double highestPrice, double lowestPrice,
-			int volume, double yesterdayClosePrice, double tradeAmount, double closePrice, List<Gear> buyOneToFive, List<Gear> sellOneToFive) {
+
+
+
+	public RealTime1(String stockId, double lastTradePrice, double openPrice, double highestPrice, double lowestPrice,
+			int volume, double yesterdayClosePrice, double tradeAmount, double closePrice, List<Gear> buyOneToFive, List<Gear> sellOneToFive,
+					 int invol, int outerDisc) {
 		super();
 		this.stockId = stockId;
 		this.lastTradePrice = lastTradePrice;
@@ -31,6 +36,8 @@ public class RealTime1 implements Serializable {
 		this.buyOneToFive = buyOneToFive;
 		this.sellOneToFive = sellOneToFive;
 		this.closePrice = closePrice;
+		this.invol = invol;
+		this.outerDisc = outerDisc;
 	}
 
     
@@ -180,5 +187,21 @@ public class RealTime1 implements Serializable {
 
 	public void setClosePrice(double closePrice) {
 		this.closePrice = closePrice;
+	}
+
+	public int getInvol() {
+		return invol;
+	}
+
+	public void setInvol(int invol) {
+		this.invol = invol;
+	}
+
+	public int getOuterDisc() {
+		return outerDisc;
+	}
+
+	public void setOuterDisc(int outerDisc) {
+		this.outerDisc = outerDisc;
 	}
 }

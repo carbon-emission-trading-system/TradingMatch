@@ -24,8 +24,8 @@ public class MtradeOrder {
     private double tradePrice;
     //成交量
     private int exchangeAmount;
-    //买卖盘
-    private boolean tradeType;
+    //内外盘
+    private int tradeType;
     private int buyerId;
     private int sellerId;
 
@@ -47,7 +47,7 @@ public class MtradeOrder {
         jsonObject.put("time", new java.sql.Time(getDate().getTime()));
         jsonObject.put("tradePrice", getTradePrice());
         jsonObject.put("exchangeAmount", getExchangeAmount());
-        jsonObject.put("tradeType", isTradeType());
+        jsonObject.put("tradeType", getTradeType());
         jsonObject.put("buyerId",getBuyerId());
         jsonObject.put("sellerId",getSellerId());
         return jsonObject.toJSONString();
@@ -125,11 +125,11 @@ public class MtradeOrder {
         this.exchangeAmount = exchangeAmount;
     }
 
-    public boolean isTradeType() {
+    public int getTradeType() {
         return tradeType;
     }
 
-    public void setTradeType(boolean tradeType) {
+    public void setTradeType(int tradeType) {
         this.tradeType = tradeType;
     }
 
