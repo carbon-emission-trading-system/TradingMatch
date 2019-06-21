@@ -15,8 +15,8 @@ public class RealTime1 implements Serializable {
     private List<Gear> buyOneToFive;//买一买五
     private List<Gear> sellOneToFive;//卖一卖五
 	private double closePrice;
-	private int invol;
-	private int outerDisc;
+	private int inMarket;
+	private int outMarket;
 
 
 
@@ -36,8 +36,8 @@ public class RealTime1 implements Serializable {
 		this.buyOneToFive = buyOneToFive;
 		this.sellOneToFive = sellOneToFive;
 		this.closePrice = closePrice;
-		this.invol = invol;
-		this.outerDisc = outerDisc;
+		this.inMarket = invol;
+		this.outMarket = outerDisc;
 	}
 
     
@@ -189,19 +189,15 @@ public class RealTime1 implements Serializable {
 		this.closePrice = closePrice;
 	}
 
-	public int getInvol() {
-		return invol;
+	public int getOutMarket() {
+		return outMarket;
 	}
 
-	public void setInvol(int invol) {
-		this.invol = invol;
+	public int getInMarket() {
+		return inMarket;
 	}
 
-	public int getOuterDisc() {
-		return outerDisc;
-	}
-
-	public void setOuterDisc(int outerDisc) {
-		this.outerDisc = outerDisc;
+	public void setInMarket(int inMarket) {
+		this.inMarket = inMarket;
 	}
 }
