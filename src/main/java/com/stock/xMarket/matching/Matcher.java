@@ -245,7 +245,7 @@ public class Matcher {
 
     //插入订单簿
     private final boolean insertOrder(Morder order) {
-        if (order.getRemQty() <= 0){
+        if (order.getRemQty() <= 0) {
             logger.info("订单剩余委托量小于或等于0，无法插入订单簿");
             return false;
         }
@@ -292,7 +292,7 @@ public class Matcher {
         else {
             TradedInst stock = stockList.getStock(stockID);
             stock.setNew_price(tradePrice);
-        
+
         }
         mtradeOrder.setTradeOrderId(System.currentTimeMillis());
         mtradeOrder.setStockID(stockID);
@@ -357,8 +357,7 @@ public class Matcher {
             result.setPrice(-1);
             result.setVolume(0);
             return result;
-        }
-        else {
+        } else {
             buyKey = buyEntry.getKey();
             buyLdr = buyEntry.getValue();
 
@@ -467,9 +466,6 @@ public class Matcher {
     }
 
 
- 
-
-
     //集合竞价撮合
     @Scheduled(cron = "0 25 9 ? * MON-FRI")
     @Scheduled(cron = "0 57 14 ? * MON-FRI")
@@ -491,21 +487,18 @@ public class Matcher {
                 if (hour < 12) {
                     stock.setNew_price(stock.getPastClosePrice());
                     stock.setOpenPrice(stock.getNew_price());
-                }
-                else
+                } else
                     stock.setClosePrice(stock.getNew_price());
                 RealTime1 real = getRealTime1(stock);
                 stockRedis.put(stock.getStockId() + "", real, -1);
                 logger.info("更新股票行情揭露信息");
                 continue;
-            }
-            else {
+            } else {
                 Calendar calendar = Calendar.getInstance();
                 int hour = calendar.get(Calendar.HOUR_OF_DAY);
                 if (hour < 12) {
                     stock.setOpenPrice(result.getPrice());
-                }
-                else
+                } else
                     stock.setClosePrice(result.getPrice());
             }
 
@@ -629,12 +622,11 @@ public class Matcher {
         TradedInst stock = stockList.getStock(order.getStock_id());
         if (order.getTrade_straregy() == 1 || order.getTrade_straregy() == 2 || order.getTrade_straregy() == 5
                 || order.getTrade_straregy() == 6 || order.getTrade_straregy() == 7) {
-        	if(order.getType() == 0)
-        		order.setOrder_price(Double.MAX_VALUE);
-        	else
-        		order.setOrder_price(Double.MIN_VALUE);
-        }
-        else if (order.getTrade_straregy() == 3) {
+            if (order.getType() == 0)
+                order.setOrder_price(Double.MAX_VALUE);
+            else
+                order.setOrder_price(Double.MIN_VALUE);
+        } else if (order.getTrade_straregy() == 3) {
             if (stock.getBestPeerPrcLdr(order.getType()) == null)
                 return -1;
             PriceLeader bestLeader = stock.getBestPeerPrcLdr(order.getType()).getValue();
@@ -739,23 +731,20 @@ public class Matcher {
                     nextOrder = false;
                     tradeOrder.setSellPoint(false);
                 }
-            }
-            else {
+            } else {
                 tradeOrder = getTradeOrder(order.getStock_id(), oldOrder.getOrder_id(), order.getOrder_id(),
                         false, false, oldOrder.getOrder_price(),
                         nnqty, 1, oldOrder.getOwner(), order.getOwner());
                 if (oldOrder.getRemQty() <= 0) {
                     nextOrder = true;
                     tradeOrder.setBuyPoint(true);
-                }
-                else {
+                } else {
                     nextOrder = false;
                     tradeOrder.setBuyPoint(false);
                 }
                 if (order.getRemQty() <= 0) {
                     tradeOrder.setSellPoint(true);
-                }
-                else
+                } else
                     tradeOrder.setSellPoint(false);
             }
             logger.info("生成成交单：" + tradeOrder.toJson());
@@ -777,10 +766,10 @@ public class Matcher {
             stock.setMaxPrice(order.getTradePrice());
         if (order.getTradePrice() < stock.getMinPrice())
             stock.setMinPrice(order.getTradePrice());
-        if(order.getTradeType() == 0)
-            stock.setInvol(stock.getInvol() + order.getExchangeAmount());
-        else
+        if (order.getTradeType() == 0)
             stock.setOuterDisc(stock.getOuterDisc() + order.getExchangeAmount());
+        else
+            stock.setInvol(stock.getInvol() + order.getExchangeAmount());
     }
 
     //移除档位
@@ -832,7 +821,7 @@ public class Matcher {
         //System.out.println(qty);
         if (order.getTrade_straregy() != 0 && qty == -1)
             backOrder(order);
-        else if(order.getTrade_straregy() != 0 && order.getTrade_straregy() != 3 && order.getTrade_straregy() != 4
+        else if (order.getTrade_straregy() != 0 && order.getTrade_straregy() != 3 && order.getTrade_straregy() != 4
                 && qty == 0)
             backOrder(order);
         else {
