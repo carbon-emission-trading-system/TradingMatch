@@ -10,7 +10,7 @@ public class MatcherConfig {
     @Bean
     Matcher matcher() {
         try {
-            return new Matcher(1000, 10000, 10000);
+            return new Matcher(1000, 500000, 500000);
         } catch (InstantiationException e) {
             e.printStackTrace();
             System.out.println("instant");

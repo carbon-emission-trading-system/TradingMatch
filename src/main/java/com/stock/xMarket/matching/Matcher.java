@@ -91,9 +91,9 @@ public class Matcher {
     @RabbitListener(queues = RabbitConfig.QUEUE_A)
     public void process(String content) {
         logger.info("接收处理连续竞价委托队列当中的消息： " + content);
-//        JSONObject order = JSON.parseObject(content);
-//        Morder morder = new Morder(order);
-//        continuousBidding(morder);
+        JSONObject order = JSON.parseObject(content);
+        Morder morder = new Morder(order);
+        continuousBidding(morder);
 
     }
 
