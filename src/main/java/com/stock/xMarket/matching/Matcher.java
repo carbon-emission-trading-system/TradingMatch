@@ -54,7 +54,7 @@ public class Matcher {
         this.prcLdrPool = new RecyclablePool(1000);
         this.orderPool = new AllocOnlyPool(10000);
         this.tradeOrderPool = new TradeOrderPool(10000);
-        this.delPrcLdrList = new LinkedList<Double>();
+        this.delPrcLdrList = new    LinkedList<Double>();
         this.delPrcLdrList2 = new LinkedList<Double>();
         this.orderList = new TreeMap<Long, Morder>();
     }
@@ -91,9 +91,9 @@ public class Matcher {
     @RabbitListener(queues = RabbitConfig.QUEUE_A)
     public void process(String content) {
         logger.info("接收处理连续竞价委托队列当中的消息： " + content);
-//        JSONObject order = JSON.parseObject(content);
-//        Morder morder = new Morder(order);
-//        continuousBidding(morder);
+        JSONObject order = JSON.parseObject(content);
+        Morder morder = new Morder(order);
+        continuousBidding(morder);
 
     }
 
@@ -469,7 +469,6 @@ public class Matcher {
     //集合竞价撮合
     @Scheduled(cron = "0 25 9 ? * MON-FRI")
     @Scheduled(cron = "0 57 14 ? * MON-FRI")
-    @Scheduled(cron = "0 45 16 ? * MON-FRI")
     public boolean doCallAuction() {
         Iterator<Map.Entry<String, TradedInst>> its = stockList.getList().entrySet().iterator();
         while (its.hasNext()) {
@@ -483,12 +482,13 @@ public class Matcher {
             if (result.getVolume() <= 0) {
                 Calendar calendar = Calendar.getInstance();
                 int hour = calendar.get(Calendar.HOUR_OF_DAY);
-                //改回12
                 if (hour < 12) {
                     stock.setNew_price(stock.getPastClosePrice());
                     stock.setOpenPrice(stock.getNew_price());
-                } else
+                } else {
                     stock.setClosePrice(stock.getNew_price());
+                    stockRepository.saveAndFlush(stock);
+                }
                 RealTime1 real = getRealTime1(stock);
                 stockRedis.put(stock.getStockId() + "", real, -1);
                 logger.info("更新股票行情揭露信息");
@@ -498,8 +498,10 @@ public class Matcher {
                 int hour = calendar.get(Calendar.HOUR_OF_DAY);
                 if (hour < 12) {
                     stock.setOpenPrice(result.getPrice());
-                } else
+                } else {
                     stock.setClosePrice(result.getPrice());
+                    stockRepository.saveAndFlush(stock);
+                }
             }
 
             PriceLeader buyLdr = null;
