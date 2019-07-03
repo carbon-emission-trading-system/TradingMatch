@@ -468,7 +468,7 @@ public class Matcher {
 
     //集合竞价撮合
     @Scheduled(cron = "0 25 9 ? * MON-FRI")
-    @Scheduled(cron = "0 57 14 ? * MON-FRI")
+    @Scheduled(cron = "0 00 22 ? * MON-FRI")
     public boolean doCallAuction() {
         Iterator<Map.Entry<String, TradedInst>> its = stockList.getList().entrySet().iterator();
         while (its.hasNext()) {
